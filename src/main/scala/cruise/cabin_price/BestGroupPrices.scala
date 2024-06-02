@@ -1,30 +1,16 @@
 package cruise.cabin_price
 
-// Background: ​The TST cruise application receives pricing and rate information
-// from a third party data provider. We make two calls to this provider to receive
-// a list of rates and a list of cabin prices. We can use this data to solve
-// several problems for our customers. The problem we’ll be focusing on for this
-// exercise will be finding the best price for a particular rate group.
-
 /**
- * A rate is a way to group related prices together. A rate is defined by its
- * Rate Code and which Rate Group it belongs to. For example. (MilAB, Military)
- * and (Sen123, Senior)
+ * A rate is a way to group related prices together. A rate is defined by its Rate Code and which Rate Group
+ * it belongs to. For example. (MilAB, Military) and (Sen123, Senior)
  */
 case class Rate(rateCode: String, rateGroup: String)
 
 /**
- * ​The price for a specific cabin on a specific cruise. All cabin prices will
- * have a single rate attached.
+ * ​The price for a specific cabin on a specific cruise. All cabin prices will have a single rate attached.
  */
 case class CabinPrice(cabinCode: String, rateCode: String, price: BigDecimal)
 
-/**
- * ​Specific rates are grouped into a related rate group. There is a one-to-many
- * relationship between rate groups and rates (A rate group is made up of many
- * rates, but a rate can only belong to a single rate group) Some examples of
- * rate groups are: Standard, Military, Senior, and Promotion.
- */
 case class BestGroupPrice(
   cabinCode: String,
   rateCode: String,
@@ -32,11 +18,36 @@ case class BestGroupPrice(
   rateGroup: String
 )
 
+def getBestGroupPricesForCabinAndGroup(
+  prices: Seq[CabinPrice],
+  rateGroupForCode: Map[String, String]
+): Map[(String, String), BestGroupPrice] = prices.foldLeft(Map.empty) { (bestPrices, cabinPrice) =>
+  val maybeRateGroup = rateGroupForCode.get(cabinPrice.rateCode)
+  val CabinPrice(cabinCode, rateCode, currentPrice) = cabinPrice
+
+  // NOTE: Silently ignores `CabinPrice`s with unrecognized `rateCode`s
+  val updatedBestPrices = maybeRateGroup.flatMap { rateGroup =>
+    val currentIsBestPrice = bestPrices.get((cabinCode, rateGroup)) match
+      case Some(existingGroupPrice) => currentPrice < existingGroupPrice.price
+      case None                     => true
+
+    if (currentIsBestPrice)
+      val newBestGroupPrice = BestGroupPrice(cabinCode, rateCode, currentPrice, rateGroup)
+      Some(bestPrices + ((cabinCode, rateGroup) -> newBestGroupPrice))
+    else None
+  }
+
+  updatedBestPrices.getOrElse(bestPrices)
+}
+
 /**
- * Write a function that will take a list of rates and a list of prices and
- * returns the best price for each rate group.
+ * Takes a list of rates and a list of prices and returns the best price for each rate group.
  */
 def getBestGroupPrices(
   rates: Seq[Rate],
   prices: Seq[CabinPrice]
-): Seq[BestGroupPrice] = ???
+): Seq[BestGroupPrice] = {
+  val rateGroupForCode = rates.map(r => r.rateCode -> r.rateGroup).toMap
+
+  return getBestGroupPricesForCabinAndGroup(prices, rateGroupForCode).values.toSeq
+}
