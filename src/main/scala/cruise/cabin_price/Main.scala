@@ -22,5 +22,4 @@ package cruise.cabin_price
 // BestGroupPrice(CB, M1, 230.00, Military)
 // BestGroupPrice(CB, S1, 245.00, Senior)
 
-
 @main def main = println("Hello, world")

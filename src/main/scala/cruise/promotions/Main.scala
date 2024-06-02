@@ -16,5 +16,4 @@ package cruise.promotions
 // Expected Output for Promotion Combinations for promotionCode=”P3”:
 // Seq(PromotionCombo(Seq(P3, P2)), PromotionCombo(Seq(P3, P4, P5)))
 
-
 @main def main = println("Hello, world")

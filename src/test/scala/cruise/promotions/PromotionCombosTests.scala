@@ -8,6 +8,6 @@ class BestGroupPriceTests extends AnyFunSuite:
     assert(true)
   }
 
-  test("another test") (pending)
+  test("another test")(pending)
 
 end BestGroupPriceTests
