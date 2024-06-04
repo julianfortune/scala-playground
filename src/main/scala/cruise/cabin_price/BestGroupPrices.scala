@@ -21,23 +21,24 @@ case class BestGroupPrice(
 def getBestGroupPricesForCabinAndGroup(
   prices: Seq[CabinPrice],
   rateGroupForCode: Map[String, String]
-): Map[(String, String), BestGroupPrice] = prices.foldLeft(Map.empty) { (bestPrices, cabinPrice) =>
-  val maybeRateGroup = rateGroupForCode.get(cabinPrice.rateCode)
-  val CabinPrice(cabinCode, rateCode, currentPrice) = cabinPrice
+): Map[(String, String), BestGroupPrice] = {
+  prices.foldLeft(Map.empty) { (bestPrices, current) =>
+    val maybeRateGroup = rateGroupForCode.get(current.rateCode)
 
-  // NOTE: Silently ignores `CabinPrice`s with unrecognized `rateCode`s
-  val updatedBestPrices = maybeRateGroup.flatMap { rateGroup =>
-    val currentIsBestPrice = bestPrices.get((cabinCode, rateGroup)) match
-      case Some(existingGroupPrice) => currentPrice < existingGroupPrice.price
-      case None                     => true
+    // NOTE: Silently ignores `CabinPrice`s with unrecognized `rateCode`s
+    val updatedBestPrices = maybeRateGroup.flatMap { rateGroup =>
+      val currentIsBestPrice = bestPrices.get((current.cabinCode, rateGroup)) match
+        case Some(existingGroupPrice) => current.price < existingGroupPrice.price
+        case None                     => true
 
-    if (currentIsBestPrice)
-      val newBestGroupPrice = BestGroupPrice(cabinCode, rateCode, currentPrice, rateGroup)
-      Some(bestPrices + ((cabinCode, rateGroup) -> newBestGroupPrice))
-    else None
+      if (currentIsBestPrice) {
+        val newBestGroupPrice = BestGroupPrice(current.cabinCode, current.rateCode, current.price, rateGroup)
+        Some(bestPrices + ((current.cabinCode, rateGroup) -> newBestGroupPrice))
+      } else None
+    }
+
+    updatedBestPrices.getOrElse(bestPrices)
   }
-
-  updatedBestPrices.getOrElse(bestPrices)
 }
 
 /**

@@ -11,6 +11,10 @@ case class Promotion(code: String, notCombinableWith: Seq[String])
 
 case class PromotionCombo(promotionCodes: Seq[String])
 
+/**
+ * Transforms the sequential promotion data into a map representing nodes and adjacent nodes (i.e., promotion
+ * codes and combinable promotions)
+ */
 def createPromotionGraph(allPromotions: Seq[Promotion]): Map[String, Set[String]] = {
   val allPromotionCodes = allPromotions.map(_.code).toSet
 
@@ -33,28 +37,28 @@ def findCombinationsFor(
   combinations: Seq[PromotionCombo]
 ): Seq[PromotionCombo] = frontier match
   case Nil => combinations
-  case currentIntermediateCombo :: remainingFrontier => {
-    if (exploredCombinations.contains(currentIntermediateCombo.promotionCodes)) {
+  case current :: remainingFrontier => {
+    if (exploredCombinations.contains(current.promotionCodes)) {
       findCombinationsFor(promotionGraph, remainingFrontier, exploredCombinations, combinations)
     } else {
-      val newIntermediateCombos = currentIntermediateCombo.combinableWith.map { additionalPromotion =>
-        IntermediateCombo(
-          currentIntermediateCombo.promotionCodes + additionalPromotion,
-          currentIntermediateCombo.combinableWith & promotionGraph
-            .get(additionalPromotion)
-            .getOrElse(Set.empty)
-        )
-      }
-      val isLeaf = newIntermediateCombos.size == 0
+      // Find new (potentially intermediate) combinations by adding each available additional promotion in turn
+      val newFrontier = current.combinableWith.map { additionalPromotion =>
+        val promotionCodes = current.promotionCodes + additionalPromotion
+        val combinableWith = current.combinableWith & promotionGraph.getOrElse(additionalPromotion, Set.empty)
 
+        IntermediateCombo(promotionCodes, combinableWith)
+      }
+
+      // If no more promotions can be added, include in the finalized list of combinations
+      val isLeaf = newFrontier.size == 0
       val updatedCombinations = if (isLeaf) {
-        combinations :+ PromotionCombo(currentIntermediateCombo.promotionCodes.toSeq)
+        combinations :+ PromotionCombo(current.promotionCodes.toSeq)
       } else combinations
 
       findCombinationsFor(
         promotionGraph,
-        remainingFrontier ++ newIntermediateCombos,
-        exploredCombinations + currentIntermediateCombo.promotionCodes,
+        remainingFrontier ++ newFrontier,
+        exploredCombinations + current.promotionCodes,
         updatedCombinations
       )
     }
@@ -68,6 +72,7 @@ def allCombinablePromotions(
 ): Seq[PromotionCombo] = {
   val promotionGraph = createPromotionGraph(allPromotions)
 
+  // Create an initial frontier of singleton "combinations" for each promotion
   val allPromotionCodes = allPromotions.map(_.code).toSet
   val initialFrontier = allPromotions.map { p =>
     val combinableWith = allPromotionCodes -- p.notCombinableWith - p.code
@@ -91,7 +96,10 @@ def combinablePromotions(
 ): Seq[PromotionCombo] = {
   val promotionGraph = createPromotionGraph(allPromotions)
 
-  val combinableWith = promotionGraph.get(promotionCode).getOrElse(Set.empty)
+  // Create an initial frontier containing only the specified promotion so only combinations that include this code
+  // are considered.
+  // NOTE: Fails silently when `promotionCode` is not in `allPromotions`
+  val combinableWith = promotionGraph.getOrElse(promotionCode, Set.empty)
   val initialFrontier = Seq(IntermediateCombo(Set(promotionCode), combinableWith))
 
   findCombinationsFor(
