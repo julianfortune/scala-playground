@@ -8,7 +8,7 @@ case class PromotionCombo(promotionCodes: Seq[String])
 
 /**
  * Transforms the sequential promotion data into a map representing nodes and adjacent nodes (i.e., promotion
- * codes and combinable promotions)
+ * codes and combinable promotion codes)
  */
 def createPromotionGraph(allPromotions: Seq[Promotion]): Map[String, Set[String]] = {
   val allPromotionCodes = allPromotions.map(_.code).toSet
@@ -25,7 +25,7 @@ case class IntermediateCombo(promotionCodes: Set[String], combinableWith: Set[St
 @tailrec
 def findCombinationsFor(
   promotionGraph: Map[String, Set[String]],
-  frontier: Seq[IntermediateCombo], // Stack of combinations to explore
+  frontier: Seq[IntermediateCombo], // Combinations to explore
   exploredCombinations: Set[Set[String]],
   maximalCombinations: Seq[PromotionCombo]
 ): Seq[PromotionCombo] = {
@@ -88,7 +88,7 @@ def allCombinablePromotions(
 }
 
 /**
- * Finds all PromotionCombos for a given Promotion from given list of Promotions.
+ * Finds all `PromotionCombo`s for a given promotion from given list of `Promotion`s.
  */
 def combinablePromotions(
   promotionCode: String,
@@ -98,7 +98,6 @@ def combinablePromotions(
 
   // Create an initial frontier containing only the specified promotion so only combinations
   // that include this code are considered.
-  // NOTE: Fails silently when `promotionCode` is not in `allPromotions`
   val combinableWith = promotionGraph.getOrElse(promotionCode, Set.empty)
   val initialFrontier = Seq(IntermediateCombo(Set(promotionCode), combinableWith))
 

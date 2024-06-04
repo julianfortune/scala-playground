@@ -25,7 +25,7 @@ def getBestGroupPricesForCabinAndGroup(
   prices.foldLeft(Map.empty) { (bestPrices, current) =>
     val maybeRateGroup = rateGroupForCode.get(current.rateCode)
 
-    // NOTE: Silently ignores `CabinPrice`s with unrecognized `rateCode`s
+    // NOTE: Ignores `CabinPrice`s with unrecognized `rateCode`s
     val updatedBestPrices = maybeRateGroup.flatMap { rateGroup =>
       val currentIsBestPrice = bestPrices.get((current.cabinCode, rateGroup)) match
         case Some(existingGroupPrice) => current.price < existingGroupPrice.price
