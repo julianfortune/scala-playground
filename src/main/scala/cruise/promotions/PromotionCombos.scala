@@ -66,9 +66,9 @@ def findCombinationsFor(
 def allCombinablePromotions(
   allPromotions: Seq[Promotion]
 ): Seq[PromotionCombo] = {
-  val allPromotionCodes = allPromotions.map(_.code).toSet
   val promotionGraph = createPromotionGraph(allPromotions)
 
+  val allPromotionCodes = allPromotions.map(_.code).toSet
   val initialFrontier = allPromotions.map { p =>
     val combinableWith = allPromotionCodes -- p.notCombinableWith - p.code
     IntermediateCombo(Set(p.code), combinableWith)
@@ -89,7 +89,6 @@ def combinablePromotions(
   promotionCode: String,
   allPromotions: Seq[Promotion]
 ): Seq[PromotionCombo] = {
-  val allPromotionCodes = allPromotions.map(_.code).toSet
   val promotionGraph = createPromotionGraph(allPromotions)
 
   val combinableWith = promotionGraph.get(promotionCode).getOrElse(Set.empty)
