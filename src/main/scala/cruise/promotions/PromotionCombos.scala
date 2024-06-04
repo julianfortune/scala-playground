@@ -73,11 +73,9 @@ def allCombinablePromotions(
   val promotionGraph = createPromotionGraph(allPromotions)
 
   // Create an initial frontier of single-promotion "combinations" for each promotion
-  val allPromotionCodes = allPromotions.map(_.code).toSet
-  val initialFrontier = allPromotions.map { p =>
-    val combinableWith = allPromotionCodes -- p.notCombinableWith - p.code
-    IntermediateCombo(Set(p.code), combinableWith)
-  }
+  val initialFrontier = promotionGraph.map { (code, combinableWith) =>
+    IntermediateCombo(Set(code), combinableWith)
+  }.toSeq
 
   findCombinationsFor(
     promotionGraph,
