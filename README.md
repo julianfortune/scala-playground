@@ -31,3 +31,11 @@ From `sbt`:
 ```shell
 sbt:ScalaPlayground> runMain cruise.promotions.main
 ```
+
+### Tests
+
+Run tests:
+
+```shell
+sbt test
+```

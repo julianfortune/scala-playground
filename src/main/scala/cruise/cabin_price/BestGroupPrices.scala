@@ -33,6 +33,7 @@ def getBestGroupPricesForCabinAndGroup(
 
       if (currentIsBestPrice) {
         val newBestGroupPrice = BestGroupPrice(current.cabinCode, current.rateCode, current.price, rateGroup)
+        // Update the map with the new best price (overwriting any worse price if one exists)
         Some(bestPrices + ((current.cabinCode, rateGroup) -> newBestGroupPrice))
       } else None
     }

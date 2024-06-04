@@ -1,10 +1,11 @@
 package cruise.cabin_price
 
 import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.flatspec.AnyFlatSpec
 
-class BestGroupPriceTests extends AnyFunSuite:
+class BestGroupPriceTests extends AnyFlatSpec:
 
-  test("produces the correct output for the example data") {
+  "getBestGroupPrices" should "identify the best price for each group" in {
     val inputRates = Seq(
       Rate("M1", "Military"),
       Rate("M2", "Military"),
@@ -33,7 +34,7 @@ class BestGroupPriceTests extends AnyFunSuite:
     assert(getBestGroupPrices(inputRates, inputCabins) == expectedOutput)
   }
 
-  test("does not throw when there are unrecognized rate codes") {
+  it should "handle unrecognized rate codes gracefully" in {
     val rates = Seq(
       Rate("M1", "Military")
     )

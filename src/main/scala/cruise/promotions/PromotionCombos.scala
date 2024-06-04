@@ -2,11 +2,6 @@ package cruise.promotions
 
 import scala.annotation.tailrec
 
-// Background:​ Cruise bookings can have one or more Promotions applied to them.
-// But sometimes a Promotion cannot be combined with another Promotion. Our
-// application has to find out all possible Promotion Combinations that can be
-// applied together.
-
 case class Promotion(code: String, notCombinableWith: Seq[String])
 
 case class PromotionCombo(promotionCodes: Seq[String])
@@ -30,39 +25,43 @@ case class IntermediateCombo(promotionCodes: Set[String], combinableWith: Set[St
 @tailrec
 def findCombinationsFor(
   promotionGraph: Map[String, Set[String]],
-  frontier: Seq[IntermediateCombo],
+  frontier: Seq[IntermediateCombo], // Stack of combinations to explore
   exploredCombinations: Set[Set[String]],
-  combinations: Seq[PromotionCombo]
+  maximalCombinations: Seq[PromotionCombo]
 ): Seq[PromotionCombo] = {
   frontier match
-    case Nil => combinations
-    case current :: remainingFrontier => {
-      if (exploredCombinations.contains(current.promotionCodes)) {
-        findCombinationsFor(promotionGraph, remainingFrontier, exploredCombinations, combinations)
-      } else {
-        // Find new (potentially intermediate) combinations by adding each available additional promotion in turn
-        val newFrontier = current.combinableWith.map { additionalPromotion =>
-          val promotionCodes = current.promotionCodes + additionalPromotion
-          val combinableWith =
-            current.combinableWith & promotionGraph.getOrElse(additionalPromotion, Set.empty)
+    // Process the current combination if it has not already been explored
+    case current :: remainingFrontier if !exploredCombinations.contains(current.promotionCodes) => {
+      // Find new (potentially intermediate) combinations by adding each available additional promotion in turn
+      val newFrontier = current.combinableWith.map { additionalPromotion =>
+        val promotionCodes = current.promotionCodes + additionalPromotion
+        val combinableWith =
+          current.combinableWith & promotionGraph.getOrElse(additionalPromotion, Set.empty)
 
-          IntermediateCombo(promotionCodes, combinableWith)
-        }
-
-        // If no more promotions can be added, include this combination in the finalized list of combinations
-        val isLeaf = newFrontier.size == 0
-        val updatedCombinations = if (isLeaf) {
-          combinations :+ PromotionCombo(current.promotionCodes.toSeq)
-        } else combinations
-
-        findCombinationsFor(
-          promotionGraph,
-          remainingFrontier ++ newFrontier,
-          exploredCombinations + current.promotionCodes,
-          updatedCombinations
-        )
+        IntermediateCombo(promotionCodes, combinableWith)
       }
+
+      // If no more promotions can be added, include this combination in the list of finalized combinations
+      val isMaximal = newFrontier.size == 0
+      val updatedMaximalCombinations = if (isMaximal) {
+        maximalCombinations :+ PromotionCombo(current.promotionCodes.toSeq)
+      } else maximalCombinations
+
+      findCombinationsFor(
+        promotionGraph,
+        remainingFrontier ++ newFrontier,
+        exploredCombinations + current.promotionCodes,
+        updatedMaximalCombinations
+      )
     }
+
+    // Skip a combinations that have already been explored
+    case _ :: remainingFrontier =>
+      findCombinationsFor(promotionGraph, remainingFrontier, exploredCombinations, maximalCombinations)
+
+    // Stop searching when all possible combinations have been explored (i.e., frontier is empty)
+    case Nil => maximalCombinations
+
 }
 
 /**
@@ -73,7 +72,7 @@ def allCombinablePromotions(
 ): Seq[PromotionCombo] = {
   val promotionGraph = createPromotionGraph(allPromotions)
 
-  // Create an initial frontier of singleton "combinations" for each promotion
+  // Create an initial frontier of single-promotion "combinations" for each promotion
   val allPromotionCodes = allPromotions.map(_.code).toSet
   val initialFrontier = allPromotions.map { p =>
     val combinableWith = allPromotionCodes -- p.notCombinableWith - p.code
