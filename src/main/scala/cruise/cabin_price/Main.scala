@@ -28,5 +28,4 @@ val expectedOutput = Seq(
 @main def main = {
   val results = getBestGroupPrices(inputRates, inputCabins)
   println(results)
-  println(results == expectedOutput)
 }
