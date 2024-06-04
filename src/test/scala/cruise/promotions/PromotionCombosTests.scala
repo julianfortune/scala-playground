@@ -5,7 +5,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 class PromotionCombosTests extends AnyFlatSpec:
 
   "createPromotionGraph" should "create the correct graph" in {
-    val promotions = List(Promotion("A", List("B")), Promotion("B", List("A")), Promotion("C", List.empty))
+    val promotions = Seq(Promotion("A", Seq("B")), Promotion("B", Seq("A")), Promotion("C", Seq.empty))
 
     val graph = createPromotionGraph(promotions)
 
@@ -26,7 +26,7 @@ class PromotionCombosTests extends AnyFlatSpec:
       "D" -> Set("E"),
       "E" -> Set("D")
     )
-    val frontier = List(
+    val frontier = Seq(
       IntermediateCombo(Set("A"), Set("B", "C")),
       IntermediateCombo(Set("B"), Set("A", "C")),
       IntermediateCombo(Set("C"), Set("A", "B")),
@@ -34,7 +34,7 @@ class PromotionCombosTests extends AnyFlatSpec:
       IntermediateCombo(Set("E"), Set("D"))
     )
 
-    val combos = findCombinationsFor(graph, frontier, Set.empty, List.empty)
+    val combos = findCombinationsFor(graph, frontier, Set.empty, Seq.empty)
 
     val expected = Set(PromotionCombo("A" :: "B" :: "C" :: Nil), PromotionCombo("D" :: "E" :: Nil))
 
@@ -53,11 +53,11 @@ class PromotionCombosTests extends AnyFlatSpec:
   "allCombinablePromotions" should "return the 'maximal' promotion combinations" in {
     val combinations = allCombinablePromotions(promotions)
 
-    val expected = List(
-      PromotionCombo(List("P1", "P2")),
-      PromotionCombo(List("P1", "P5", "P4")),
-      PromotionCombo(List("P2", "P3")),
-      PromotionCombo(List("P3", "P5", "P4"))
+    val expected = Seq(
+      PromotionCombo(Seq("P1", "P2")),
+      PromotionCombo(Seq("P1", "P5", "P4")),
+      PromotionCombo(Seq("P2", "P3")),
+      PromotionCombo(Seq("P3", "P5", "P4"))
     )
 
     // Order is not relevant
@@ -76,7 +76,7 @@ class PromotionCombosTests extends AnyFlatSpec:
     assert(combinations.toSet == expected.toSet)
   }
 
-  "combinablePromotions" should "return the correct promotion combinations for 'P3'" in {
+  it should "return the correct promotion combinations for 'P3'" in {
     val combinations = combinablePromotions("P3", promotions)
 
     val expected = Seq(

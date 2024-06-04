@@ -55,7 +55,7 @@ def findCombinationsFor(
       )
     }
 
-    // Skip a combinations that have already been explored
+    // Skip the current combination if it has already been explored
     case _ :: remainingFrontier =>
       findCombinationsFor(promotionGraph, remainingFrontier, exploredCombinations, maximalCombinations)
 
@@ -96,8 +96,8 @@ def combinablePromotions(
 ): Seq[PromotionCombo] = {
   val promotionGraph = createPromotionGraph(allPromotions)
 
-  // Create an initial frontier containing only the specified promotion so only combinations that include this code
-  // are considered.
+  // Create an initial frontier containing only the specified promotion so only combinations
+  // that include this code are considered.
   // NOTE: Fails silently when `promotionCode` is not in `allPromotions`
   val combinableWith = promotionGraph.getOrElse(promotionCode, Set.empty)
   val initialFrontier = Seq(IntermediateCombo(Set(promotionCode), combinableWith))

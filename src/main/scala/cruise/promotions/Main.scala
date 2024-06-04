@@ -13,6 +13,6 @@ val promotions = Seq(
   println(allCombinablePromotions(promotions))
 
   println("============ Part 2 ============")
-  println(s"combinablePromotions(\"P1\", promotions) = ${combinablePromotions("P1", promotions)}")
-  println(s"combinablePromotions(\"P3\", promotions) = ${combinablePromotions("P3", promotions)}")
+  println(s"\"P1\" -> ${combinablePromotions("P1", promotions)}")
+  println(s"\"P3\" -> ${combinablePromotions("P3", promotions)}")
 }
